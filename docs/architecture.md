@@ -11,7 +11,10 @@
 - Config: human-authored JSONC, validated with JSON Schema 2020-12 via Ajv.
 - Documents carry `schemaVersion` and migrate before validation.
 
-Exact family config filenames are not locked yet.
+Family files:
+
+- Workspace config: `client-platform.config.jsonc`
+- Project manifest: `client-platform.manifest.jsonc`
 
 ## Product shape
 
@@ -48,11 +51,13 @@ CLI  ->  host/remote manifests  ->  contract validation  ->  runtime adapters  -
 - Runtime adapters and templates.
 - Local integration preview.
 
-## What should probably live in a family kernel
+## What lives in the family kernel
+
+Kernel is a separate repository, `client-platform-labs/kernel`. This product depends on it; it does not reimplement it.
+
+Kernel owns:
 
 - CLI bootstrap and diagnostics.
 - Config/manifest load, migrate, validate.
 - Plugin registry and lazy loading.
 - Workspace/project discovery.
-
-That split is pending `shared kernel boundaries`.
