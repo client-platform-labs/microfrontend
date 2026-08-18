@@ -18,22 +18,26 @@ This repository is intended to cover:
 
 This repository should not become a wrapper around a single app's integration details.
 
-## Planned Shape
+## Local development
 
-The expected product shape is:
+Requires Node.js 24.x LTS. This package depends on a local `../kernel` checkout via `file:` during scaffolding.
 
-- a CLI for scaffolding hosts/remotes and validating contracts
-- reusable runtime and adapter packages
-- presets for mainstream frontend stacks
-- shared config and manifest conventions
-- examples for local development, integration, and release
+```bash
+# from sibling kernel repo first:
+#   cd ../kernel && npm install && npm run build
+npm install
+npm run build
+node ./bin/microfrontend.js --help
+```
 
-## Initial Milestones
+CLI surface: `init`, `add-remote`, `validate`, `preview`, `doctor`. Default preset: `host-react-vite`.
 
-1. Define the host/remote domain model and compatibility boundaries.
-2. Decide the core runtime contract and adapter responsibilities.
-3. Design the package split between CLI, runtime, presets, and plugins.
-4. Build a minimal host-plus-remote demo for validation.
+`init` writes minimal family config:
+
+- `client-platform.config.jsonc` with `products.microfrontend`
+- `client-platform.manifest.jsonc` with host role / remotes stubs
+
+`add-remote` and `preview` are stubs in this command-shell milestone.
 
 ## Documents
 

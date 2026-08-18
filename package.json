@@ -1,0 +1,47 @@
+{
+  "name": "@client-platform/microfrontend",
+  "version": "0.0.0",
+  "description": "Microfrontend CLI for Client Platform Labs",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bin": {
+    "microfrontend": "./bin/microfrontend.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "microfrontend": "node ./bin/microfrontend.js"
+  },
+  "dependencies": {
+    "@client-platform/kernel": "file:../kernel/packages/kernel",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  },
+  "clientPlatform": {
+    "name": "@client-platform/microfrontend",
+    "schemaVersion": "0",
+    "compatibility": {
+      "cli": ">=0.0.0",
+      "manifest": ">=0"
+    },
+    "supports": {
+      "targets": ["web"]
+    },
+    "capabilities": ["commands"]
+  }
+}
