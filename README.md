@@ -35,6 +35,11 @@ The expected product shape is:
 3. Design the package split between CLI, runtime, presets, and plugins.
 4. Build a minimal host-plus-remote demo for validation.
 
+## Documents
+
+- [Roadmap](./ROADMAP.md)
+- [Architecture](./docs/architecture.md)
+
 ## Working Principles
 
 - explicit runtime contracts
