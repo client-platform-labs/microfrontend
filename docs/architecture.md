@@ -56,7 +56,7 @@ This Product is also loadable by the Umbrella CLI `client-platform` through `pac
 
 ## What lives in the family kernel
 
-Kernel is a separate repository, `client-platform-labs/kernel`. This product depends on it; it does not reimplement it.
+Kernel is a separate repository, [`client-platform-labs/kernel`](https://github.com/client-platform-labs/kernel). It publishes `@client-platform/kernel` and `@client-platform/cli`. This product depends on the library; it does not reimplement it.
 
 Kernel owns:
 
