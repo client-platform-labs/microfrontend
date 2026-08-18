@@ -1,28 +1,23 @@
 # Roadmap
 
-This is the first delivery map for `microfrontend`. Shared-kernel ownership is still an open family decision.
+Command-shell track for Client Platform Labs v1.
 
 ## Now
 
-- Keep the repository charter current.
-- Lock the domain language: host, remote, contract, runtime adapter, integration preview.
-- Define the host/remote compatibility contract and versioning rules.
-- Define the first CLI surface: `init`, `add-remote`, `validate`, `preview`, `doctor`.
+- CLI surface (locked, mostly stubbed): `init`, `add-remote`, `validate`, `preview`, `doctor`.
+- Default preset (locked): `host-react-vite`.
+- `init` / `doctor` / `validate` should write and check family config; other commands may stub.
 
 ## Next
 
-- Ship a local MVP with one host and one remote that can start, share a contract, and fail loudly on mismatch.
-- Keep framework-specific Module Federation / native federation details in adapters.
-- Add an example that runs without a custom company platform.
+- Host + remote contract model.
+- Real `preview` against one federation adapter.
 
 ## Later
 
-- Add multi-remote integration tests and release compatibility gates.
-- Add deployment topology presets (independent remotes vs integrated host release).
-- Align package layout with the family shared kernel once that boundary is decided.
+- Multi-remote gates and deployment topology presets.
 
 ## Non-goals for v1
 
+- Deep runtime implementation beyond stubs.
 - Forcing one microfrontend runtime on every team.
-- Replacing application routers or design systems.
-- Hiding independent-delivery constraints behind a fake monolith DX.
