@@ -6,7 +6,8 @@
 
 - Runtime: Node.js 24.x LTS + TypeScript.
 - CLI framework: `commander`.
-- Packaging: ESM-first npm packages with a `bin` entry.
+- Packaging: ESM-first npm packages under `@client-platform/*`, with Product `bin` entries plus family command `client-platform`.
+- Plugin metadata: `package.json#clientPlatform`.
 - Command loading: static core commands; heavy/optional paths via `import()`.
 - Config: human-authored JSONC, validated with JSON Schema 2020-12 via Ajv.
 - Documents carry `schemaVersion` and migrate before validation.
@@ -29,11 +30,13 @@ CLI  ->  host/remote manifests  ->  contract validation  ->  runtime adapters  -
 
 ## Proposed package split
 
-- `microfrontend` CLI package
-- `@.../mfe-runtime`
-- `@.../mfe-contract`
-- `@.../adapter-*`
+- `@client-platform/microfrontend` CLI package, bin `microfrontend`
+- `@client-platform/mfe-runtime`
+- `@client-platform/mfe-contract`
+- `@client-platform/adapter-*`
 - `examples/host` and `examples/remote-*`
+
+This Product is also loadable by the Umbrella CLI `client-platform` through `package.json#clientPlatform`.
 
 ## Inputs and outputs
 
