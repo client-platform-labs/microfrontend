@@ -1,28 +1,23 @@
 # Roadmap
 
-Command-shell track evolving toward host/remote contracts.
-
 ## Now
 
-- CLI surface (locked): `init`, `add-remote`, `validate`, `preview`, `doctor`.
-- Default preset (locked): `host-react-vite`.
-- Composition config (locked): `products.microfrontend` with `host` + `remotes[]` (`name`/`entry`).
-- Adapter default (locked): `vite-federation`.
-- `validate` v1: kernel schemas + host required + unique remote name/entry.
-- `preview` v1: static host shell + remote placeholders (not full Module Federation yet).
+- CLI: `init`, `add-remote`, `validate`, `preview`, `doctor`
+- Locked composition under `products.microfrontend` (`host` + `remotes` + `vite-federation`)
+- `validate` enforces host + unique remote names/entries
+- `preview` serves static host shell + remote placeholders (`--write-only` available)
 
 ## Next
 
-- Implement config shape on `init` and enforce `validate` rules above.
-- Ship placeholder `preview` server.
-- Real `add-remote` mutating `products.microfrontend.remotes`.
+- Real Vite federation adapter wiring for local remotes
+- Shared-dep semver intersection checks
 
 ## Later
 
-- Full Vite federation adapter and webpack adapter.
-- Shared-dependency semver intersection checks.
+- webpack Module Federation adapter
+- Runtime contract packages
 
 ## Non-goals for v1
 
-- Forcing one microfrontend runtime beyond the default adapter direction.
-- Deep multi-remote release gates.
+- Full Module Federation preview runtime
+- Duplicating remotes into Project Manifest

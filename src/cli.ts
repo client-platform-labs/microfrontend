@@ -1,6 +1,8 @@
 import { createCli } from "@client-platform/kernel";
+import { runAddRemote } from "./add-remote.js";
 import { runDoctor } from "./doctor.js";
 import { runInit } from "./init.js";
+import { runPreview } from "./preview.js";
 import { DEFAULT_PRESET } from "./types.js";
 import { runValidate } from "./validate.js";
 
@@ -35,12 +37,17 @@ export async function run(argv: string[]): Promise<void> {
 
   program
     .command("add-remote")
-    .description("Register a remote against the host composition (stub)")
-    .argument("[name]", "remote name")
-    .action(async (name?: string) => {
-      console.log(
-        `[microfrontend] add-remote: stub — remote registration for "${name ?? "<name>"}" lands in a later milestone.`,
-      );
+    .description("Register a remote against the host composition")
+    .argument("<name>", "remote name")
+    .option("--entry <url>", "remote entry URL")
+    .action(async (name: string, opts: { entry?: string }) => {
+      try {
+        const result = await runAddRemote(process.cwd(), name, opts.entry);
+        console.log(`added remote ${result.remote.name} → ${result.remote.entry}`);
+        console.log(`updated ${result.configPath} (remotes=${result.remotes.length})`);
+      } catch (err) {
+        fail(err);
+      }
     });
 
   program
@@ -51,6 +58,9 @@ export async function run(argv: string[]): Promise<void> {
         const result = await runValidate(process.cwd());
         for (const check of result.checks) {
           console.log(`ok: ${check}`);
+        }
+        for (const warning of result.warnings) {
+          console.warn(`warn: ${warning}`);
         }
         for (const error of result.errors) {
           console.error(`error: ${error}`);
@@ -66,11 +76,18 @@ export async function run(argv: string[]): Promise<void> {
 
   program
     .command("preview")
-    .description("Run local host+remote integration preview (stub)")
-    .action(async () => {
-      console.log(
-        "[microfrontend] preview: stub — federation preview lands in a later milestone.",
-      );
+    .description("Serve static host+remote composition preview")
+    .option("--port <n>", "port", "4173")
+    .option("--write-only", "write preview HTML and exit")
+    .action(async (opts: { port: string; writeOnly?: boolean }) => {
+      try {
+        await runPreview(process.cwd(), {
+          port: Number(opts.port) || 4173,
+          writeOnly: Boolean(opts.writeOnly),
+        });
+      } catch (err) {
+        fail(err);
+      }
     });
 
   program

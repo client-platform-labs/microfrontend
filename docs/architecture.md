@@ -2,35 +2,23 @@
 
 `microfrontend` composes independently delivered client apps through explicit host/remote contracts.
 
-## Family constraints
-
-- Node.js 24.x LTS + TypeScript + `commander`
-- `@client-platform/kernel` for config/manifest/doctor
-- Workspace Config / Project Manifest JSONC + Ajv
-- Default web stack: React 19 + Vite 8
-
 ## Composition (locked)
 
-Declared under `products.microfrontend` in `client-platform.config.jsonc`:
+`products.microfrontend`:
 
 - `preset` (default `host-react-vite`)
 - `adapter` (default `vite-federation`)
 - `host`: `{ name, entry }`
-- `remotes`: `[{ name, entry }, ...]` unique by `name`
+- `remotes`: `[{ name, entry }, ...]` unique by `name` and `entry`
 
-Project Manifest carries `targets` / `tooling` only.
+Project Manifest: `targets` / `tooling` only.
 
 ## CLI
 
-| Command | v1 behavior |
+| Command | v1 |
 | --- | --- |
-| `init` | write family files + composition stub |
-| `validate` | kernel validate + host/remotes shape |
-| `add-remote` | mutate remotes list (next) |
-| `preview` | static host + placeholders (not full MF) |
-| `doctor` | kernel doctor + product checks |
-
-## Packages
-
-- `@client-platform/microfrontend` (bin `microfrontend`)
-- future: runtime/contract/adapter packages
+| `init` | family files + host entry stub |
+| `add-remote` | append remote to config |
+| `validate` | kernel + host/remotes shape |
+| `preview` | static host page + placeholders |
+| `doctor` | kernel + product checks |

@@ -5,11 +5,13 @@ import {
   PROJECT_MANIFEST_FILENAME,
   WORKSPACE_CONFIG_FILENAME,
 } from "@client-platform/kernel";
+import { normalizeProductConfig } from "./config.js";
 
 export type ValidateResult = {
   ok: boolean;
   checks: string[];
   errors: string[];
+  warnings: string[];
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -19,6 +21,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export async function runValidate(cwd: string): Promise<ValidateResult> {
   const checks: string[] = [];
   const errors: string[] = [];
+  const warnings: string[] = [];
 
   try {
     const workspace = await loadWorkspaceConfig(cwd);
@@ -31,16 +34,41 @@ export async function runValidate(cwd: string): Promise<ValidateResult> {
       `loaded ${PROJECT_MANIFEST_FILENAME} (schemaVersion=${manifest.schemaVersion})`,
     );
 
-    const product = workspace.products?.microfrontend;
-    if (!isRecord(product)) {
+    if (!isRecord(workspace.products?.microfrontend)) {
       errors.push("products.microfrontend missing in workspace config");
-    } else {
-      checks.push("products.microfrontend present");
-      if (typeof product.preset !== "string" || !product.preset) {
-        errors.push("products.microfrontend.preset must be a non-empty string");
-      } else {
-        checks.push(`preset=${product.preset}`);
+      return { ok: false, checks, errors, warnings };
+    }
+
+    const product = normalizeProductConfig(workspace.products.microfrontend);
+    if (!product) {
+      errors.push(
+        "products.microfrontend must include preset, host.name, and host.entry",
+      );
+      return { ok: false, checks, errors, warnings };
+    }
+
+    checks.push(`preset=${product.preset}`);
+    checks.push(`adapter=${product.adapter}`);
+    checks.push(`host=${product.host.name} (${product.host.entry})`);
+
+    const names = new Set<string>();
+    const entries = new Set<string>();
+    for (const remote of product.remotes) {
+      if (names.has(remote.name)) {
+        errors.push(`duplicate remote name: ${remote.name}`);
       }
+      names.add(remote.name);
+      if (entries.has(remote.entry)) {
+        errors.push(`duplicate remote entry: ${remote.entry}`);
+      }
+      entries.add(remote.entry);
+    }
+    checks.push(`remotes=${product.remotes.length}`);
+
+    if (isRecord(manifest) && ("role" in manifest || "remotes" in manifest)) {
+      warnings.push(
+        "project manifest should not duplicate host/remote composition; keep remotes under products.microfrontend",
+      );
     }
   } catch (err) {
     const message =
@@ -48,5 +76,5 @@ export async function runValidate(cwd: string): Promise<ValidateResult> {
     errors.push(message);
   }
 
-  return { ok: errors.length === 0, checks, errors };
+  return { ok: errors.length === 0, checks, errors, warnings };
 }

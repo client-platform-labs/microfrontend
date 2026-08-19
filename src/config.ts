@@ -4,11 +4,13 @@ import { pathExists } from "./fs-utils.js";
 import { parseJsonc, stringifyJsonc } from "./jsonc.js";
 import {
   CONFIG_FILE_NAME,
+  DEFAULT_ADAPTER,
+  DEFAULT_HOST,
   DEFAULT_PRESET,
-  DEFAULT_ROLE,
   MANIFEST_FILE_NAME,
   SCHEMA_VERSION,
   type MicrofrontendConfig,
+  type MicrofrontendRemote,
   type ProjectManifestFile,
   type WorkspaceConfigFile,
 } from "./types.js";
@@ -49,6 +51,45 @@ async function writeJsoncFile(
   await writeFile(filePath, stringifyJsonc(value, header), "utf8");
 }
 
+export function defaultProductConfig(preset: string): MicrofrontendConfig {
+  return {
+    preset: preset || DEFAULT_PRESET,
+    adapter: DEFAULT_ADAPTER,
+    host: { ...DEFAULT_HOST },
+    remotes: [],
+  };
+}
+
+export function normalizeProductConfig(
+  value: unknown,
+): MicrofrontendConfig | null {
+  if (!isRecord(value)) return null;
+  if (typeof value.preset !== "string" || !value.preset) return null;
+  if (!isRecord(value.host)) return null;
+  if (typeof value.host.name !== "string" || !value.host.name) return null;
+  if (typeof value.host.entry !== "string" || !value.host.entry) return null;
+
+  const remotesRaw = Array.isArray(value.remotes) ? value.remotes : [];
+  const remotes: MicrofrontendRemote[] = [];
+  for (const remote of remotesRaw) {
+    if (!isRecord(remote)) continue;
+    if (typeof remote.name !== "string" || !remote.name) continue;
+    if (typeof remote.entry !== "string" || !remote.entry) continue;
+    remotes.push({ name: remote.name, entry: remote.entry });
+  }
+
+  return {
+    preset: value.preset,
+    adapter:
+      value.adapter === "vite-federation" ? "vite-federation" : DEFAULT_ADAPTER,
+    host: {
+      name: value.host.name,
+      entry: value.host.entry,
+    },
+    remotes,
+  };
+}
+
 export async function writeWorkspaceConfig(
   cwd: string,
   patch: MicrofrontendConfig,
@@ -63,12 +104,10 @@ export async function writeWorkspaceConfig(
     products: {
       ...existing.products,
       microfrontend: {
-        ...(isRecord(existing.products?.microfrontend)
-          ? existing.products.microfrontend
-          : {}),
         preset: patch.preset,
-        role: patch.role,
-        remotes: patch.remotes ?? [],
+        adapter: patch.adapter,
+        host: patch.host,
+        remotes: patch.remotes,
       },
     },
   };
@@ -82,19 +121,16 @@ export async function writeWorkspaceConfig(
 
 export async function writeProjectManifest(
   cwd: string,
-  patch: Pick<ProjectManifestFile, "targets" | "tooling" | "role" | "remotes">,
+  patch: Pick<ProjectManifestFile, "targets" | "tooling">,
 ): Promise<string> {
   const manifestPath = path.join(cwd, MANIFEST_FILE_NAME);
   const existing = (await pathExists(manifestPath))
     ? parseProjectManifest(await loadJsoncFile(manifestPath))
     : { schemaVersion: SCHEMA_VERSION };
   const next: ProjectManifestFile = {
-    ...existing,
     schemaVersion: existing.schemaVersion || SCHEMA_VERSION,
     targets: patch.targets ?? existing.targets,
     tooling: patch.tooling ?? existing.tooling,
-    role: patch.role ?? existing.role,
-    remotes: patch.remotes ?? existing.remotes,
   };
   await writeJsoncFile(
     manifestPath,
@@ -110,6 +146,7 @@ export type LoadedProject = {
   manifestPath: string;
   workspace: WorkspaceConfigFile;
   project: ProjectManifestFile;
+  product: MicrofrontendConfig | null;
 };
 
 export async function loadProject(cwd: string): Promise<LoadedProject> {
@@ -121,19 +158,13 @@ export async function loadProject(cwd: string): Promise<LoadedProject> {
   if (!(await pathExists(manifestPath))) {
     throw new Error(`missing ${MANIFEST_FILE_NAME}; run \`microfrontend init\``);
   }
+  const workspace = parseWorkspaceConfig(await loadJsoncFile(configPath));
   return {
     cwd,
     configPath,
     manifestPath,
-    workspace: parseWorkspaceConfig(await loadJsoncFile(configPath)),
+    workspace,
     project: parseProjectManifest(await loadJsoncFile(manifestPath)),
-  };
-}
-
-export function defaultProductConfig(preset: string): MicrofrontendConfig {
-  return {
-    preset: preset || DEFAULT_PRESET,
-    role: DEFAULT_ROLE,
-    remotes: [],
+    product: normalizeProductConfig(workspace.products?.microfrontend),
   };
 }

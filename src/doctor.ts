@@ -5,6 +5,7 @@ import {
   loadWorkspaceConfig,
   WORKSPACE_CONFIG_FILENAME,
 } from "@client-platform/kernel";
+import { normalizeProductConfig } from "./config.js";
 import { pathExists } from "./fs-utils.js";
 import { CONFIG_FILE_NAME, DEFAULT_PRESET, MANIFEST_FILE_NAME } from "./types.js";
 
@@ -13,10 +14,6 @@ export type DoctorFinding = {
   message: string;
   severity: "info" | "warn" | "error";
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 export async function runDoctor(cwd: string): Promise<DoctorFinding[]> {
   const findings: DoctorFinding[] = [];
@@ -58,23 +55,17 @@ export async function runDoctor(cwd: string): Promise<DoctorFinding[]> {
   if (hasConfig) {
     try {
       const workspace = await loadWorkspaceConfig(cwd);
-      const product = workspace.products?.microfrontend;
-      if (!isRecord(product)) {
+      const product = normalizeProductConfig(workspace.products?.microfrontend);
+      if (!product) {
         findings.push({
-          code: "product.preset",
-          message: `products.microfrontend missing (expected preset, default ${DEFAULT_PRESET})`,
-          severity: "error",
-        });
-      } else if (typeof product.preset !== "string" || !product.preset) {
-        findings.push({
-          code: "product.preset",
-          message: `products.microfrontend.preset missing (expected e.g. ${DEFAULT_PRESET})`,
+          code: "product.composition",
+          message: `products.microfrontend invalid (expected preset/host/remotes, default preset ${DEFAULT_PRESET})`,
           severity: "error",
         });
       } else {
         findings.push({
-          code: "product.preset",
-          message: `products.microfrontend.preset=${product.preset}`,
+          code: "product.composition",
+          message: `host=${product.host.name} remotes=${product.remotes.length} adapter=${product.adapter}`,
           severity: "info",
         });
       }
@@ -82,7 +73,7 @@ export async function runDoctor(cwd: string): Promise<DoctorFinding[]> {
       const message =
         err instanceof ConfigError || err instanceof Error ? err.message : String(err);
       findings.push({
-        code: "product.preset",
+        code: "product.composition",
         message: `unable to read ${WORKSPACE_CONFIG_FILENAME}: ${message}`,
         severity: "error",
       });
