@@ -118,8 +118,9 @@ Compatibility note (docs): family matrix still targets Vite 8 for product scaffo
 - Optional longer smoke: `preview` with short timeout + HTTP GET host HTML contains remote widget text (if CI-friendly)
 - Regression: `preview --static --write-only` still writes `.client-platform/microfrontend/preview/index.html`
 
-## Open implementation details (non-blocking)
+## Implementation defaults (locked for plan)
 
-- Exact workspace layout (npm workspaces vs nested installs) — prefer workspaces
-- Whether `--write-only` skips `vite preview` entirely (yes) or briefly starts then stops (no — skip listen)
-- Logging: stream child stdout with `[remote:name]` / `[host]` prefixes
+- Playground root uses **npm workspaces** (`host` + `remotes/*`)
+- `--write-only` **skips listening** (generate + build + status json only)
+- Child logs prefixed with `[remote:<name>]` / `[host]`
+- Remote ports are `5001 + index` with **0-based** index over the resolved name list
