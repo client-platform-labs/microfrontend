@@ -40,3 +40,6 @@ export const DEFAULT_HOST: MicrofrontendHost = {
   entry: "./src/host.tsx",
 };
 export const PREVIEW_DIR = ".client-platform/microfrontend/preview";
+export const PLAYGROUND_DIR = ".client-platform/microfrontend/playground";
+export const DEFAULT_SYNTHETIC_REMOTE = "demo_remote";
+export const REMOTE_PORT_BASE = 5001;
