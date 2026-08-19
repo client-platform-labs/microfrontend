@@ -1,23 +1,28 @@
 # Roadmap
 
-Command-shell track for Client Platform Labs v1.
+Command-shell track evolving toward host/remote contracts.
 
 ## Now
 
-- CLI surface (locked, mostly stubbed): `init`, `add-remote`, `validate`, `preview`, `doctor`.
+- CLI surface (locked): `init`, `add-remote`, `validate`, `preview`, `doctor`.
 - Default preset (locked): `host-react-vite`.
-- `init` / `doctor` / `validate` should write and check family config; other commands may stub.
+- Composition config (locked): `products.microfrontend` with `host` + `remotes[]` (`name`/`entry`).
+- Adapter default (locked): `vite-federation`.
+- `validate` v1: kernel schemas + host required + unique remote name/entry.
+- `preview` v1: static host shell + remote placeholders (not full Module Federation yet).
 
 ## Next
 
-- Host + remote contract model.
-- Real `preview` against one federation adapter.
+- Implement config shape on `init` and enforce `validate` rules above.
+- Ship placeholder `preview` server.
+- Real `add-remote` mutating `products.microfrontend.remotes`.
 
 ## Later
 
-- Multi-remote gates and deployment topology presets.
+- Full Vite federation adapter and webpack adapter.
+- Shared-dependency semver intersection checks.
 
 ## Non-goals for v1
 
-- Deep runtime implementation beyond stubs.
-- Forcing one microfrontend runtime on every team.
+- Forcing one microfrontend runtime beyond the default adapter direction.
+- Deep multi-remote release gates.
