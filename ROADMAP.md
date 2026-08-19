@@ -18,5 +18,5 @@
 
 ## Non-goals for v1
 
-- Full Module Federation preview runtime
+- webpack Module Federation preview (Vite + originjs federation playground is in scope)
 - Duplicating remotes into Project Manifest
