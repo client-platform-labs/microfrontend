@@ -1,66 +1,36 @@
 # Architecture
 
-`microfrontend` is a composition toolkit: it makes independently delivered client apps integrate through explicit contracts, not through copy-paste host code.
+`microfrontend` composes independently delivered client apps through explicit host/remote contracts.
 
-## Family constraints already decided
+## Family constraints
 
-- Runtime: Node.js 24.x LTS + TypeScript.
-- CLI framework: `commander`.
-- Packaging: ESM-first npm packages under `@client-platform/*`, with Product `bin` entries plus family command `client-platform`.
-- Plugin metadata: `package.json#clientPlatform`.
-- Command loading: static core commands; heavy/optional paths via `import()`.
-- Config: human-authored JSONC, validated with JSON Schema 2020-12 via Ajv.
-- Documents carry `schemaVersion` and migrate before validation.
+- Node.js 24.x LTS + TypeScript + `commander`
+- `@client-platform/kernel` for config/manifest/doctor
+- Workspace Config / Project Manifest JSONC + Ajv
+- Default web stack: React 19 + Vite 8
 
-Family files:
+## Composition (locked)
 
-- Workspace config: `client-platform.config.jsonc`
-- Project manifest: `client-platform.manifest.jsonc`
+Declared under `products.microfrontend` in `client-platform.config.jsonc`:
 
-## Product shape
+- `preset` (default `host-react-vite`)
+- `adapter` (default `vite-federation`)
+- `host`: `{ name, entry }`
+- `remotes`: `[{ name, entry }, ...]` unique by `name`
 
-```text
-CLI  ->  host/remote manifests  ->  contract validation  ->  runtime adapters  ->  preview/integration
-```
+Project Manifest carries `targets` / `tooling` only.
 
-- **CLI**: scaffold, validate, preview, doctor.
-- **Contracts**: shared public surface between host and remotes (routes, shared deps, events, slots).
-- **Runtime adapters**: Module Federation, native federation, iframe/web-component bridges, and others.
-- **Presets**: host app and remote app templates.
+## CLI
 
-## Proposed package split
+| Command | v1 behavior |
+| --- | --- |
+| `init` | write family files + composition stub |
+| `validate` | kernel validate + host/remotes shape |
+| `add-remote` | mutate remotes list (next) |
+| `preview` | static host + placeholders (not full MF) |
+| `doctor` | kernel doctor + product checks |
 
-- `@client-platform/microfrontend` CLI package, bin `microfrontend`
-- `@client-platform/mfe-runtime`
-- `@client-platform/mfe-contract`
-- `@client-platform/adapter-*`
-- `examples/host` and `examples/remote-*`
+## Packages
 
-This Product is also loadable by the Umbrella CLI `client-platform` through `package.json#clientPlatform`.
-
-## Inputs and outputs
-
-| Flow | Input | Output |
-| --- | --- | --- |
-| `init` | app type (host/remote) | project skeleton + contract stubs |
-| `add-remote` | host + remote identity | updated host composition config |
-| `validate` | host + remote contracts | compatibility report |
-| `preview` | local host + remotes | running integration environment |
-
-## What this repo should own
-
-- Host/remote domain model.
-- Compatibility contracts and validation rules.
-- Runtime adapters and templates.
-- Local integration preview.
-
-## What lives in the family kernel
-
-Kernel is a separate repository, [`client-platform-labs/kernel`](https://github.com/client-platform-labs/kernel). It publishes `@client-platform/kernel` and `@client-platform/cli`. This product depends on the library; it does not reimplement it.
-
-Kernel owns:
-
-- CLI bootstrap and diagnostics.
-- Config/manifest load, migrate, validate.
-- Plugin registry and lazy loading.
-- Workspace/project discovery.
+- `@client-platform/microfrontend` (bin `microfrontend`)
+- future: runtime/contract/adapter packages
