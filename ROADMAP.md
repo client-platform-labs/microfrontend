@@ -5,11 +5,10 @@
 - CLI: `init`, `add-remote`, `validate`, `preview`, `doctor`
 - Locked composition under `products.microfrontend` (`host` + `remotes` + `vite-federation`)
 - `validate` enforces host + unique remote names/entries
-- `preview` serves static host shell + remote placeholders (`--write-only` available)
+- `preview` runs federation playground (Vite 7 + originjs); `--static` for legacy placeholders; `--clean`, `--write-only`, `--port` available
 
 ## Next
 
-- Real Vite federation adapter wiring for local remotes
 - Shared-dep semver intersection checks
 
 ## Later
