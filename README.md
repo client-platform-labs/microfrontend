@@ -37,7 +37,16 @@ CLI surface: `init`, `add-remote`, `validate`, `preview`, `doctor`. Default pres
 - `client-platform.config.jsonc` with `products.microfrontend`
 - `client-platform.manifest.jsonc` with host role / remotes stubs
 
-`add-remote` and `preview` are stubs in this command-shell milestone.
+### Preview
+
+```bash
+node ./bin/microfrontend.js preview              # federation sandbox (default)
+node ./bin/microfrontend.js preview --static     # legacy static HTML placeholders
+node ./bin/microfrontend.js preview --write-only # scaffold + build, no servers
+node ./bin/microfrontend.js preview --clean      # wipe playground before regenerate
+```
+
+Default preview requires `adapter: vite-federation` and serves host on port `4173` (remotes on `5001+`). Config is read-only; remote names drive the sandbox.
 
 ## Documents
 

@@ -76,14 +76,18 @@ export async function run(argv: string[]): Promise<void> {
 
   program
     .command("preview")
-    .description("Serve static host+remote composition preview")
-    .option("--port <n>", "port", "4173")
-    .option("--write-only", "write preview HTML and exit")
-    .action(async (opts: { port: string; writeOnly?: boolean }) => {
+    .description("Run federation playground preview (Vite 7 + originjs)")
+    .option("--port <n>", "host preview port", "4173")
+    .option("--write-only", "scaffold+build only; do not keep servers")
+    .option("--static", "legacy static HTML placeholder preview")
+    .option("--clean", "delete playground before regenerate")
+    .action(async (opts: { port: string; writeOnly?: boolean; static?: boolean; clean?: boolean }) => {
       try {
         await runPreview(process.cwd(), {
           port: Number(opts.port) || 4173,
           writeOnly: Boolean(opts.writeOnly),
+          staticMode: Boolean(opts.static),
+          clean: Boolean(opts.clean),
         });
       } catch (err) {
         fail(err);
