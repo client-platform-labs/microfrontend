@@ -9,6 +9,11 @@ export function resolveRemoteNames(remotes: Array<{ name: string }>): string[] {
     : [DEFAULT_SYNTHETIC_REMOTE];
 }
 
+/** npm-safe workspace package name; folder path and federation `name` keep the original casing. */
+export function playgroundRemotePackageName(name: string): string {
+  return `@playground/remote-${name.toLowerCase()}`;
+}
+
 export async function scaffoldPlayground(
   cwd: string,
   opts: { hostName: string; remoteNames: string[]; hostPort: number },
@@ -146,14 +151,14 @@ async function writeRemoteApp(
 ): Promise<void> {
   await writeText(
     path.join(dir, "package.json"),
-    playgroundPackageJson(`@playground/remote-${name}`),
+    playgroundPackageJson(playgroundRemotePackageName(name)),
   );
   await writeText(path.join(dir, "vite.config.ts"), remoteViteConfig(name, port));
   await writeText(path.join(dir, "tsconfig.json"), tsconfigJson());
   await writeText(path.join(dir, "index.html"), indexHtml(`Remote ${name}`));
   await writeText(path.join(dir, "src/vite-env.d.ts"), viteEnvDts());
   await writeText(path.join(dir, "src/Widget.tsx"), remoteWidget(name));
-  await writeText(path.join(dir, "src/main.tsx"), reactMount("./Widget"));
+  await writeText(path.join(dir, "src/main.tsx"), reactMount("./Widget", "Widget"));
 }
 
 function remoteWidget(name: string): string {
@@ -163,15 +168,14 @@ function remoteWidget(name: string): string {
 `;
 }
 
-function reactMount(componentImport: string): string {
-  const component = componentImport === "./Widget" ? "Widget" : "App";
+function reactMount(componentImport: string, componentId: string): string {
   return `import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import ${component} from ${JSON.stringify(componentImport)};
+import ${componentId} from ${JSON.stringify(componentImport)};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <${component} />
+    <${componentId} />
   </StrictMode>,
 );
 `;
@@ -215,7 +219,7 @@ async function writeHostApp(
   await writeText(path.join(dir, "src/vite-env.d.ts"), viteEnvDts());
   await writeText(path.join(dir, "src/remotes.d.ts"), hostRemotesDts(remotes));
   await writeText(path.join(dir, "src/App.tsx"), hostApp(hostName, remotes));
-  await writeText(path.join(dir, "src/main.tsx"), reactMount("./App"));
+  await writeText(path.join(dir, "src/main.tsx"), reactMount("./App", "App"));
 }
 
 function hostViteConfig(
