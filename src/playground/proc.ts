@@ -2,6 +2,15 @@ import { spawn, type ChildProcess } from "node:child_process";
 
 const DEFAULT_PREVIEW_TIMEOUT_MS = 60_000;
 const SIGKILL_GRACE_MS = 2_000;
+const IS_UNIX = process.platform !== "win32";
+
+/**
+ * Task 4 note: prefer spawning `node_modules/vite/bin/vite.js` or
+ * `node_modules/.bin/vite` over `npx vite` so previews are a single process
+ * (or a small tree) that process-group kill can tear down cleanly.
+ */
+export const TASK4_PREFER_VITE_BIN =
+  "Prefer node_modules/vite/bin/vite.js or node_modules/.bin/vite over npx for previews.";
 
 export type ProcessGroup = {
   track(child: ChildProcess): void;
@@ -18,7 +27,9 @@ function spawnChild(
     cwd,
     env: { ...process.env, ...env },
     stdio: ["ignore", "pipe", "pipe"],
-    detached: false,
+    // Detached on Unix so the child is its own process group leader;
+    // killProcessTree can then signal -pid and reap npx→vite grandchildren.
+    detached: IS_UNIX,
   });
 }
 
@@ -88,7 +99,7 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-function tryKill(child: ChildProcess, signal: NodeJS.Signals): void {
+function tryKillChild(child: ChildProcess, signal: NodeJS.Signals): void {
   if (hasExited(child) || child.pid == null) {
     return;
   }
@@ -97,6 +108,22 @@ function tryKill(child: ChildProcess, signal: NodeJS.Signals): void {
   } catch {
     // Process already gone (ESRCH) or unkillable.
   }
+}
+
+/** Unix: signal the process group (-pid); fall back to the child alone. */
+function tryKill(child: ChildProcess, signal: NodeJS.Signals): void {
+  if (hasExited(child) || child.pid == null) {
+    return;
+  }
+  if (IS_UNIX) {
+    try {
+      process.kill(-child.pid, signal);
+      return;
+    } catch {
+      // Not a group leader / already gone — fall through to child.kill.
+    }
+  }
+  tryKillChild(child, signal);
 }
 
 export function runCommand(opts: {
@@ -200,6 +227,8 @@ export async function killProcessTree(child: ChildProcess): Promise<void> {
 
   if (timedOut && !hasExited(child)) {
     tryKill(child, "SIGKILL");
+    // Also try the leaf child in case group kill failed earlier.
+    tryKillChild(child, "SIGKILL");
     await exited;
   }
 }
