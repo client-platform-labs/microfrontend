@@ -42,7 +42,7 @@ Static mode remains available for the previous placeholder behavior.
 
 ## CLI surface
 
-| Invokation | Behavior |
+| Invocation | Behavior |
 | --- | --- |
 | `preview` | Federation real preview (default) |
 | `preview --static` | Legacy static host + placeholder mounts |
