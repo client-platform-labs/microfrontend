@@ -1,4 +1,10 @@
-import { loadProject } from "./config.js";
+import {
+  ConfigError,
+  loadProjectManifest,
+  loadWorkspaceConfig,
+  PROJECT_MANIFEST_FILENAME,
+  WORKSPACE_CONFIG_FILENAME,
+} from "@client-platform/kernel";
 
 export type ValidateResult = {
   ok: boolean;
@@ -6,17 +12,27 @@ export type ValidateResult = {
   errors: string[];
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export async function runValidate(cwd: string): Promise<ValidateResult> {
   const checks: string[] = [];
   const errors: string[] = [];
 
   try {
-    const loaded = await loadProject(cwd);
-    checks.push(`loaded ${loaded.configPath}`);
-    checks.push(`loaded ${loaded.manifestPath}`);
+    const workspace = await loadWorkspaceConfig(cwd);
+    checks.push(
+      `loaded ${WORKSPACE_CONFIG_FILENAME} (schemaVersion=${workspace.schemaVersion})`,
+    );
 
-    const product = loaded.workspace.products?.microfrontend;
-    if (!product || typeof product !== "object") {
+    const manifest = await loadProjectManifest(cwd);
+    checks.push(
+      `loaded ${PROJECT_MANIFEST_FILENAME} (schemaVersion=${manifest.schemaVersion})`,
+    );
+
+    const product = workspace.products?.microfrontend;
+    if (!isRecord(product)) {
       errors.push("products.microfrontend missing in workspace config");
     } else {
       checks.push("products.microfrontend present");
@@ -26,14 +42,10 @@ export async function runValidate(cwd: string): Promise<ValidateResult> {
         checks.push(`preset=${product.preset}`);
       }
     }
-
-    if (!loaded.project.targets || loaded.project.targets.length === 0) {
-      errors.push("manifest.targets must list at least one target");
-    } else {
-      checks.push(`targets=${loaded.project.targets.join(",")}`);
-    }
   } catch (err) {
-    errors.push(err instanceof Error ? err.message : String(err));
+    const message =
+      err instanceof ConfigError || err instanceof Error ? err.message : String(err);
+    errors.push(message);
   }
 
   return { ok: errors.length === 0, checks, errors };

@@ -34,10 +34,10 @@
   },
   "clientPlatform": {
     "name": "@client-platform/microfrontend",
-    "schemaVersion": "0",
+    "schemaVersion": "1",
     "compatibility": {
       "cli": ">=0.0.0",
-      "manifest": ">=0"
+      "manifest": ">=1"
     },
     "supports": {
       "targets": ["web"]
